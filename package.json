@@ -1,6 +1,6 @@
 {
   "name": "marked-vue",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Markdown component for Vue",
   "main": "lib/index.js",
   "repository": {
@@ -16,6 +16,11 @@
   "scripts": {
     "build": "tsc -b"
   },
+  "keywords": [
+    "markdown",
+    "vue",
+    "component"
+  ],
   "peerDependencies": {
     "vue": "^3"
   },

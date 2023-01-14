@@ -5,7 +5,7 @@ import xss from 'xss'
 // Sections derived from MDN element categories and limited to the more
 // benign categories.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element
-const  allowedTags = [
+const allowedTags = [
   // Content sectioning
   'address', 'article', 'aside', 'footer', 'header',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hgroup',
@@ -25,7 +25,18 @@ const  allowedTags = [
 
 const voidTags = ['img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta']
 
-function sanitize(html: string) {
+const allowedProtocols = ['http:', 'https:', 'mailto:', 'tel:']
+
+function checkUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return allowedProtocols.includes(url.protocol)
+  } catch (e) {
+    return false
+  }
+}
+
+export function sanitize(html: string) {
   const whiteList: XSS.IWhiteList = {
     ...Object.fromEntries(allowedTags.map(tag => [tag, []])),
     a: ['target', 'href', 'title', 'rel'],
@@ -33,13 +44,12 @@ function sanitize(html: string) {
   const stack: string[] = []
   html = xss(html, {
     whiteList,
+    stripIgnoreTag: true,
     onTag(tag, html, options) {
-      if (html.endsWith('/>') || voidTags.includes(tag)) {
-        return html
-      }
+      if (html.endsWith('/>') || voidTags.includes(tag)) return
       if (!options.isClosing) {
         stack.push(tag)
-        return html
+        return
       }
       let result = ''
       while (stack.length) {
@@ -50,6 +60,11 @@ function sanitize(html: string) {
         result += `</${last}>`
       }
       return html.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    },
+    onTagAttr(tag, name, value, isWhiteAttr) {
+      if (name === 'href') {
+        if (!checkUrl(value)) return ''
+      }
     },
   })
   while (stack.length) {
