@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 import { marked } from 'marked'
-import xss from 'xss'
+import { filterXSS } from 'xss'
 
 // Sections derived from MDN element categories and limited to the more
 // benign categories.
@@ -42,7 +42,7 @@ export function sanitize(html: string) {
     a: ['target', 'href', 'title', 'rel'],
   }
   const stack: string[] = []
-  html = xss(html, {
+  html = filterXSS(html, {
     whiteList,
     stripIgnoreTag: true,
     onTag(tag, html, options) {
