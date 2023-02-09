@@ -1,6 +1,6 @@
 {
   "name": "marked-vue",
-  "version": "1.1.4",
+  "version": "1.1.6",
   "description": "Markdown component for Vue",
   "type": "module",
   "main": "lib/index.js",

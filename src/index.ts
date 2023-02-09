@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 import { marked } from 'marked'
-import { filterXSS } from 'xss'
+import { escapeAttrValue, filterXSS, parseAttr } from 'xss'
 
 // Sections derived from MDN element categories and limited to the more
 // benign categories.
@@ -29,7 +29,7 @@ const allowedProtocols = ['http:', 'https:', 'mailto:', 'tel:']
 
 function checkUrl(value: string) {
   try {
-    const url = new URL(value)
+    const url = new URL(value, location.toString())
     return allowedProtocols.includes(url.protocol)
   } catch (e) {
     return false
@@ -39,32 +39,41 @@ function checkUrl(value: string) {
 export function sanitize(html: string) {
   const whiteList: XSS.IWhiteList = {
     ...Object.fromEntries(allowedTags.map(tag => [tag, []])),
-    a: ['target', 'href', 'title', 'rel'],
   }
   const stack: string[] = []
   html = filterXSS(html, {
     whiteList,
     stripIgnoreTag: true,
-    onTag(tag, html, options) {
-      if (html.endsWith('/>') || voidTags.includes(tag)) return
+    onTag(tag, raw, options) {
+      let html: string | undefined
+      if (tag === 'a' && !options.isClosing) {
+        const attrs: any = {}
+        parseAttr(raw.slice(3), (name, value) => {
+          if (name === 'href') {
+            attrs[name] = checkUrl(value) ? value : '#'
+          } else if (name === 'title') {
+            attrs[name] = escapeAttrValue(value)
+          }
+          return ''
+        })
+        attrs.rel = 'noopener noreferrer'
+        attrs.target = '_blank'
+        html = `<a ${Object.entries(attrs).map(([name, value]) => `${name}="${value}"`).join(' ')}>`
+      }
+      if (raw.endsWith('/>') || voidTags.includes(tag)) return
       if (!options.isClosing) {
         stack.push(tag)
-        return
+        return html
       }
       let result = ''
       while (stack.length) {
         const last = stack.pop()
         if (last === tag) {
-          return result + html
+          return result + raw
         }
         result += `</${last}>`
       }
-      return html.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    },
-    onTagAttr(tag, name, value, isWhiteAttr) {
-      if (name === 'href') {
-        if (!checkUrl(value)) return ''
-      }
+      return raw.replace(/</g, '&lt;').replace(/>/g, '&gt;')
     },
   })
   while (stack.length) {
@@ -79,13 +88,13 @@ export default defineComponent({
     source: String,
     inline: Boolean,
     tag: String,
-    safe: Boolean,
+    unsafe: Boolean,
   },
   setup(props) {
     let html = props.inline
       ? marked.parseInline(props.source || '')
       : marked.parse(props.source || '')
-    if (props.safe ?? props.inline) html = sanitize(html)
+    if (!props.unsafe) html = sanitize(html)
     return () => {
       const tag = props.tag || (props.inline ? 'span' : 'div')
       return h(tag, {
