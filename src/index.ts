@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 import { marked } from 'marked'
-import { escapeAttrValue, filterXSS, parseAttr } from 'xss'
+import * as xss from 'xss'
 
 // Sections derived from MDN element categories and limited to the more
 // benign categories.
@@ -41,18 +41,18 @@ export function sanitize(html: string) {
     ...Object.fromEntries(allowedTags.map(tag => [tag, []])),
   }
   const stack: string[] = []
-  html = filterXSS(html, {
+  html = xss.filterXSS(html, {
     whiteList,
     stripIgnoreTag: true,
     onTag(tag, raw, options) {
       let html: string | undefined
       if (tag === 'a' && !options.isClosing) {
         const attrs: any = {}
-        parseAttr(raw.slice(3), (name, value) => {
+        xss.parseAttr(raw.slice(3), (name, value) => {
           if (name === 'href') {
             attrs[name] = checkUrl(value) ? value : '#'
           } else if (name === 'title') {
-            attrs[name] = escapeAttrValue(value)
+            attrs[name] = xss.escapeAttrValue(value)
           }
           return ''
         })
@@ -91,11 +91,11 @@ export default defineComponent({
     unsafe: Boolean,
   },
   setup(props) {
-    let html = props.inline
-      ? marked.parseInline(props.source || '')
-      : marked.parse(props.source || '')
-    if (!props.unsafe) html = sanitize(html)
     return () => {
+      let html = props.inline
+        ? marked.parseInline(props.source || '')
+        : marked.parse(props.source || '')
+      if (!props.unsafe) html = sanitize(html)
       const tag = props.tag || (props.inline ? 'span' : 'div')
       return h(tag, {
         class: 'markdown',

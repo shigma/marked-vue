@@ -1,6 +1,6 @@
 {
   "name": "marked-vue",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Markdown component for Vue",
   "main": "lib/index.cjs",
   "module": "lib/index.mjs",
@@ -33,11 +33,11 @@
   },
   "devDependencies": {
     "@types/marked": "^4.0.8",
-    "typescript": "^4.9.4",
-    "vue": "^3.2.45"
+    "typescript": "^5.0.4",
+    "vue": "^3.2.47"
   },
   "dependencies": {
-    "marked": "^4.2.12",
+    "marked": "^4.3.0",
     "xss": "^1.0.14"
   }
 }
