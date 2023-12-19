@@ -1,6 +1,6 @@
 {
   "name": "marked-vue",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "Markdown component for Vue",
   "main": "lib/index.cjs",
   "module": "lib/index.mjs",
@@ -19,8 +19,8 @@
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "compile:cjs": "esbuild src/index.ts --outfile=lib/index.cjs --bundle --platform=node --external=marked --external=xss --target=es2019",
-    "compile:esm": "esbuild src/index.ts --outfile=lib/index.mjs --bundle --platform=neutral --external=marked --external=xss --target=esnext",
+    "compile:cjs": "esbuild src/index.ts --outfile=lib/index.cjs --bundle --platform=node --external=marked --external=xss --target=es2022",
+    "compile:esm": "esbuild src/index.ts --outfile=lib/index.mjs --bundle --platform=neutral --external=marked --external=xss --target=es2022",
     "build": "yarn compile:cjs && yarn compile:esm && yarn tsc -b"
   },
   "keywords": [
@@ -32,12 +32,11 @@
     "vue": "^3"
   },
   "devDependencies": {
-    "@types/marked": "^4.0.8",
-    "typescript": "^5.0.4",
-    "vue": "^3.2.47"
+    "typescript": "^5.3.2",
+    "vue": "^3.3.13"
   },
   "dependencies": {
-    "marked": "^4.3.0",
+    "marked": "^9.1.6",
     "xss": "^1.0.14"
   }
 }

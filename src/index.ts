@@ -93,7 +93,9 @@ export default defineComponent({
   setup(props) {
     return () => {
       let html = props.inline
-        ? marked.parseInline(props.source || '')
+        // I have no idea why its return type is `string | Promise<string>`,
+        // but it's not a promise in practice (at least for now).
+        ? marked.parseInline(props.source || '') as string
         : marked.parse(props.source || '')
       if (!props.unsafe) html = sanitize(html)
       const tag = props.tag || (props.inline ? 'span' : 'div')
